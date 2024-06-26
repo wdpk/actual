@@ -6,7 +6,7 @@ import { useCategory } from '../../hooks/useCategory';
 import { type CSSProperties, theme, styles } from '../../style';
 import { BalanceWithCarryover } from '../budget/BalanceWithCarryover';
 import { BalanceMenu } from '../budget/rollover/BalanceMenu';
-import { Modal, ModalTitle } from '../common/Modal';
+import { Modal, ModalHeader, ModalTitle } from '../common/Modal2';
 import { Text } from '../common/Text';
 import { View } from '../common/View';
 import { type CommonModalProps } from '../Modals';
@@ -39,9 +39,12 @@ export function RolloverBalanceMenuModal({
 
   return (
     <Modal
-      title={<ModalTitle title={category.name} shrinkOnOverflow />}
-      showHeader
-      focusAfterClose={false}
+      header={props => (
+        <ModalHeader
+          {...props}
+          title={<ModalTitle title={category.name} shrinkOnOverflow />}
+        />
+      )}
       {...modalProps}
     >
       <View
