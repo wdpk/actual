@@ -6,7 +6,12 @@ import { useCategory } from '../../hooks/useCategory';
 import { type CSSProperties, theme, styles } from '../../style';
 import { BalanceWithCarryover } from '../budget/BalanceWithCarryover';
 import { BalanceMenu } from '../budget/report/BalanceMenu';
-import { Modal, ModalHeader, ModalTitle } from '../common/Modal2';
+import {
+  Modal,
+  ModalCloseButton,
+  ModalHeader,
+  ModalTitle,
+} from '../common/Modal2';
 import { Text } from '../common/Text';
 import { View } from '../common/View';
 import { type CommonModalProps } from '../Modals';
@@ -36,48 +41,48 @@ export function ReportBalanceMenuModal({
   }
 
   return (
-    <Modal
-      header={props => (
-        <ModalHeader
-          {...props}
-          title={<ModalTitle title={category.name} shrinkOnOverflow />}
-        />
+    <Modal {...modalProps}>
+      {({ close }) => (
+        <>
+          <ModalHeader
+            title={<ModalTitle title={category.name} shrinkOnOverflow />}
+            rightContent={<ModalCloseButton onClick={close} />}
+          />
+          <View
+            style={{
+              justifyContent: 'center',
+              alignItems: 'center',
+              marginBottom: 20,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 17,
+                fontWeight: 400,
+              }}
+            >
+              Balance
+            </Text>
+            <BalanceWithCarryover
+              disabled
+              style={{
+                textAlign: 'center',
+                ...styles.veryLargeText,
+              }}
+              carryoverStyle={{ right: -20, width: 15, height: 15 }}
+              carryover={reportBudget.catCarryover(categoryId)}
+              balance={reportBudget.catBalance(categoryId)}
+              goal={reportBudget.catGoal(categoryId)}
+              budgeted={reportBudget.catBudgeted(categoryId)}
+            />
+          </View>
+          <BalanceMenu
+            categoryId={categoryId}
+            getItemStyle={() => defaultMenuItemStyle}
+            onCarryover={onCarryover}
+          />
+        </>
       )}
-      {...modalProps}
-    >
-      <View
-        style={{
-          justifyContent: 'center',
-          alignItems: 'center',
-          marginBottom: 20,
-        }}
-      >
-        <Text
-          style={{
-            fontSize: 17,
-            fontWeight: 400,
-          }}
-        >
-          Balance
-        </Text>
-        <BalanceWithCarryover
-          disabled
-          style={{
-            textAlign: 'center',
-            ...styles.veryLargeText,
-          }}
-          carryoverStyle={{ right: -20, width: 15, height: 15 }}
-          carryover={reportBudget.catCarryover(categoryId)}
-          balance={reportBudget.catBalance(categoryId)}
-          goal={reportBudget.catGoal(categoryId)}
-          budgeted={reportBudget.catBudgeted(categoryId)}
-        />
-      </View>
-      <BalanceMenu
-        categoryId={categoryId}
-        getItemStyle={() => defaultMenuItemStyle}
-        onCarryover={onCarryover}
-      />
     </Modal>
   );
 }

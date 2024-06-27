@@ -337,7 +337,7 @@ export function Modals() {
             <SingleInputModal
               key={name}
               modalProps={modalProps}
-              header={props => (
+              Header={props => (
                 <ModalHeader
                   {...props}
                   title={<ModalTitle title="New Category" shrinkOnOverflow />}
@@ -355,7 +355,7 @@ export function Modals() {
             <SingleInputModal
               key={name}
               modalProps={modalProps}
-              header={props => (
+              Header={props => (
                 <ModalHeader
                   {...props}
                   title={
