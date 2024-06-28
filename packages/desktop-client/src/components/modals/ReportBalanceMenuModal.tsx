@@ -42,7 +42,7 @@ export function ReportBalanceMenuModal({
 
   return (
     <Modal {...modalProps}>
-      {({ close }) => (
+      {({ state: { close } }) => (
         <>
           <ModalHeader
             title={<ModalTitle title={category.name} shrinkOnOverflow />}
