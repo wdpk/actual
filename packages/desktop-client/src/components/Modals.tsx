@@ -1,14 +1,14 @@
 // @ts-strict-ignore
 import React, { useEffect } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 
-import { type State } from 'loot-core/src/client/state-types';
+import { closeModal } from 'loot-core/client/actions';
 import { type PopModalAction } from 'loot-core/src/client/state-types/modals';
 import { send } from 'loot-core/src/platform/client/fetch';
 import * as monthUtils from 'loot-core/src/shared/months';
 
-import { useActions } from '../hooks/useActions';
+import { useModalState } from '../hooks/useModalState';
 import { useSyncServerStatus } from '../hooks/useSyncServerStatus';
 
 import { ModalTitle, ModalHeader } from './common/Modal2';
@@ -71,64 +71,40 @@ export type CommonModalProps = {
 };
 
 export function Modals() {
-  const modalStack = useSelector((state: State) => state.modals.modalStack);
-  const isHidden = useSelector((state: State) => state.modals.isHidden);
-  const actions = useActions();
   const location = useLocation();
+  const dispatch = useDispatch();
+  const { modalStack } = useModalState();
 
   useEffect(() => {
     if (modalStack.length > 0) {
-      actions.closeModal();
+      dispatch(closeModal());
     }
   }, [location]);
 
   const syncServerStatus = useSyncServerStatus();
 
   const modals = modalStack
-    .map(({ name, options }, idx) => {
-      const modalProps: CommonModalProps = {
-        onClose: actions.popModal,
-        onBack: actions.popModal,
-        showBack: idx > 0,
-        isCurrent: idx === modalStack.length - 1,
-        isHidden,
-        stackIndex: idx,
-      };
-
+    .map(({ name, options }) => {
       switch (name) {
         case 'import-transactions':
-          return (
-            <ImportTransactions
-              key={name}
-              modalProps={modalProps}
-              options={options}
-            />
-          );
+          return <ImportTransactions key={name} options={options} />;
 
         case 'add-account':
           return (
             <CreateAccountModal
               key={name}
-              modalProps={modalProps}
               syncServerStatus={syncServerStatus}
               upgradingAccountId={options?.upgradingAccountId}
             />
           );
 
         case 'add-local-account':
-          return (
-            <CreateLocalAccountModal
-              key={name}
-              modalProps={modalProps}
-              actions={actions}
-            />
-          );
+          return <CreateLocalAccountModal key={name} />;
 
         case 'close-account':
           return (
             <CloseAccountModal
               key={name}
-              modalProps={modalProps}
               account={options.account}
               balance={options.balance}
               canDelete={options.canDelete}
@@ -139,10 +115,8 @@ export function Modals() {
           return (
             <SelectLinkedAccounts
               key={name}
-              modalProps={modalProps}
               externalAccounts={options.accounts}
               requisitionId={options.requisitionId}
-              actions={actions}
               syncSource={options.syncSource}
             />
           );
@@ -151,7 +125,6 @@ export function Modals() {
           return (
             <ConfirmCategoryDelete
               key={name}
-              modalProps={modalProps}
               category={options.category}
               group={options.group}
               onDelete={options.onDelete}
@@ -162,7 +135,6 @@ export function Modals() {
           return (
             <ConfirmUnlinkAccount
               key={name}
-              modalProps={modalProps}
               accountName={options.accountName}
               onUnlink={options.onUnlink}
             />
@@ -172,7 +144,6 @@ export function Modals() {
           return (
             <ConfirmTransactionEdit
               key={name}
-              modalProps={modalProps}
               onConfirm={options.onConfirm}
               confirmReason={options.confirmReason}
             />
@@ -182,7 +153,6 @@ export function Modals() {
           return (
             <ConfirmTransactionDelete
               key={name}
-              modalProps={modalProps}
               onConfirm={options.onConfirm}
             />
           );
@@ -193,26 +163,17 @@ export function Modals() {
               key={name}
               watchUpdates
               budgetId={options.budgetId}
-              modalProps={modalProps}
-              actions={actions}
               backupDisabled={false}
             />
           );
 
         case 'manage-rules':
-          return (
-            <ManageRulesModal
-              key={name}
-              modalProps={modalProps}
-              payeeId={options?.payeeId}
-            />
-          );
+          return <ManageRulesModal key={name} payeeId={options?.payeeId} />;
 
         case 'edit-rule':
           return (
             <EditRule
               key={name}
-              modalProps={modalProps}
               defaultRule={options.rule}
               onSave={options.onSave}
             />
@@ -222,7 +183,6 @@ export function Modals() {
           return (
             <MergeUnusedPayees
               key={name}
-              modalProps={modalProps}
               payeeIds={options.payeeIds}
               targetPayeeId={options.targetPayeeId}
             />
@@ -230,27 +190,18 @@ export function Modals() {
 
         case 'gocardless-init':
           return (
-            <GoCardlessInitialise
-              key={name}
-              modalProps={modalProps}
-              onSuccess={options.onSuccess}
-            />
+            <GoCardlessInitialise key={name} onSuccess={options.onSuccess} />
           );
 
         case 'simplefin-init':
           return (
-            <SimpleFinInitialise
-              key={name}
-              modalProps={modalProps}
-              onSuccess={options.onSuccess}
-            />
+            <SimpleFinInitialise key={name} onSuccess={options.onSuccess} />
           );
 
         case 'gocardless-external-msg':
           return (
             <GoCardlessExternalMsg
               key={name}
-              modalProps={modalProps}
               onMoveExternal={options.onMoveExternal}
               onClose={() => {
                 options.onClose?.();
@@ -261,28 +212,15 @@ export function Modals() {
           );
 
         case 'create-encryption-key':
-          return (
-            <CreateEncryptionKeyModal
-              key={name}
-              modalProps={modalProps}
-              options={options}
-            />
-          );
+          return <CreateEncryptionKeyModal key={name} options={options} />;
 
         case 'fix-encryption-key':
-          return (
-            <FixEncryptionKeyModal
-              key={name}
-              modalProps={modalProps}
-              options={options}
-            />
-          );
+          return <FixEncryptionKeyModal key={name} options={options} />;
 
         case 'edit-field':
           return (
             <EditField
               key={name}
-              modalProps={modalProps}
               name={options.name}
               onSubmit={options.onSubmit}
               onClose={options.onClose}
@@ -293,7 +231,6 @@ export function Modals() {
           return (
             <CategoryAutocompleteModal
               key={name}
-              modalProps={modalProps}
               autocompleteProps={{
                 value: null,
                 onSelect: options.onSelect,
@@ -309,7 +246,6 @@ export function Modals() {
           return (
             <AccountAutocompleteModal
               key={name}
-              modalProps={modalProps}
               autocompleteProps={{
                 value: null,
                 onSelect: options.onSelect,
@@ -323,7 +259,6 @@ export function Modals() {
           return (
             <PayeeAutocompleteModal
               key={name}
-              modalProps={modalProps}
               autocompleteProps={{
                 value: null,
                 onSelect: options.onSelect,
@@ -336,7 +271,7 @@ export function Modals() {
           return (
             <SingleInputModal
               key={name}
-              modalProps={modalProps}
+              name={name}
               Header={props => (
                 <ModalHeader
                   {...props}
@@ -354,7 +289,7 @@ export function Modals() {
           return (
             <SingleInputModal
               key={name}
-              modalProps={modalProps}
+              name={name}
               Header={props => (
                 <ModalHeader
                   {...props}
@@ -378,7 +313,6 @@ export function Modals() {
             >
               <RolloverBudgetSummaryModal
                 key={name}
-                modalProps={modalProps}
                 month={options.month}
                 onBudgetAction={options.onBudgetAction}
               />
@@ -386,21 +320,13 @@ export function Modals() {
           );
 
         case 'report-budget-summary':
-          return (
-            <ReportBudgetSummaryModal
-              key={name}
-              modalProps={modalProps}
-              month={options.month}
-            />
-          );
+          return <ReportBudgetSummaryModal key={name} month={options.month} />;
 
         case 'schedule-edit':
           return (
             <ScheduleDetails
               key={name}
-              modalProps={modalProps}
               id={options?.id || null}
-              actions={actions}
               transaction={options?.transaction || null}
             />
           );
@@ -409,45 +335,26 @@ export function Modals() {
           return (
             <ScheduleLink
               key={name}
-              modalProps={modalProps}
-              actions={actions}
               transactionIds={options?.transactionIds}
               getTransaction={options?.getTransaction}
             />
           );
 
         case 'schedules-discover':
-          return (
-            <DiscoverSchedules
-              key={name}
-              modalProps={modalProps}
-              actions={actions}
-            />
-          );
+          return <DiscoverSchedules key={name} />;
 
         case 'schedule-posts-offline-notification':
-          return (
-            <PostsOfflineNotification
-              key={name}
-              modalProps={modalProps}
-              actions={actions}
-            />
-          );
+          return <PostsOfflineNotification key={name} />;
 
         case 'switch-budget-type':
           return (
-            <SwitchBudgetTypeModal
-              key={name}
-              modalProps={modalProps}
-              onSwitch={options.onSwitch}
-            />
+            <SwitchBudgetTypeModal key={name} onSwitch={options.onSwitch} />
           );
 
         case 'account-menu':
           return (
             <AccountMenuModal
               key={name}
-              modalProps={modalProps}
               accountId={options.accountId}
               onSave={options.onSave}
               onEditNotes={options.onEditNotes}
@@ -461,11 +368,11 @@ export function Modals() {
           return (
             <CategoryMenuModal
               key={name}
-              modalProps={modalProps}
               categoryId={options.categoryId}
               onSave={options.onSave}
               onEditNotes={options.onEditNotes}
               onDelete={options.onDelete}
+              onToggleVisibility={options.onToggleVisibility}
               onClose={options.onClose}
             />
           );
@@ -477,7 +384,6 @@ export function Modals() {
               value={monthUtils.sheetForMonth(options.month)}
             >
               <RolloverBudgetMenuModal
-                modalProps={modalProps}
                 categoryId={options.categoryId}
                 onUpdateBudget={options.onUpdateBudget}
                 onCopyLastMonthAverage={options.onCopyLastMonthAverage}
@@ -494,7 +400,6 @@ export function Modals() {
               value={monthUtils.sheetForMonth(options.month)}
             >
               <ReportBudgetMenuModal
-                modalProps={modalProps}
                 categoryId={options.categoryId}
                 onUpdateBudget={options.onUpdateBudget}
                 onCopyLastMonthAverage={options.onCopyLastMonthAverage}
@@ -508,13 +413,13 @@ export function Modals() {
           return (
             <CategoryGroupMenuModal
               key={name}
-              modalProps={modalProps}
               groupId={options.groupId}
               onSave={options.onSave}
               onAddCategory={options.onAddCategory}
               onEditNotes={options.onEditNotes}
               onSaveNotes={options.onSaveNotes}
               onDelete={options.onDelete}
+              onToggleVisibility={options.onToggleVisibility}
               onClose={options.onClose}
             />
           );
@@ -523,7 +428,6 @@ export function Modals() {
           return (
             <NotesModal
               key={name}
-              modalProps={modalProps}
               id={options.id}
               name={options.name}
               onSave={options.onSave}
@@ -537,7 +441,6 @@ export function Modals() {
               value={monthUtils.sheetForMonth(options.month)}
             >
               <RolloverBalanceMenuModal
-                modalProps={modalProps}
                 categoryId={options.categoryId}
                 onCarryover={options.onCarryover}
                 onTransfer={options.onTransfer}
@@ -553,7 +456,6 @@ export function Modals() {
               value={monthUtils.sheetForMonth(options.month)}
             >
               <RolloverToBudgetMenuModal
-                modalProps={modalProps}
                 onTransfer={options.onTransfer}
                 onCover={options.onCover}
                 onHoldBuffer={options.onHoldBuffer}
@@ -569,7 +471,6 @@ export function Modals() {
               value={monthUtils.sheetForMonth(options.month)}
             >
               <HoldBufferModal
-                modalProps={modalProps}
                 month={options.month}
                 onSubmit={options.onSubmit}
               />
@@ -583,7 +484,6 @@ export function Modals() {
               value={monthUtils.sheetForMonth(options.month)}
             >
               <ReportBalanceMenuModal
-                modalProps={modalProps}
                 categoryId={options.categoryId}
                 onCarryover={options.onCarryover}
               />
@@ -594,7 +494,6 @@ export function Modals() {
           return (
             <TransferModal
               key={name}
-              modalProps={modalProps}
               title={options.title}
               month={options.month}
               amount={options.amount}
@@ -607,7 +506,6 @@ export function Modals() {
           return (
             <CoverModal
               key={name}
-              modalProps={modalProps}
               title={options.title}
               month={options.month}
               showToBeBudgeted={options.showToBeBudgeted}
@@ -619,7 +517,6 @@ export function Modals() {
           return (
             <ScheduledTransactionMenuModal
               key={name}
-              modalProps={modalProps}
               transactionId={options.transactionId}
               onPost={options.onPost}
               onSkip={options.onSkip}
@@ -630,7 +527,6 @@ export function Modals() {
           return (
             <BudgetPageMenuModal
               key={name}
-              modalProps={modalProps}
               onAddCategoryGroup={options.onAddCategoryGroup}
               onToggleHiddenCategories={options.onToggleHiddenCategories}
               onSwitchBudgetFile={options.onSwitchBudgetFile}
@@ -645,7 +541,6 @@ export function Modals() {
               value={monthUtils.sheetForMonth(options.month)}
             >
               <RolloverBudgetMonthMenuModal
-                modalProps={modalProps}
                 month={options.month}
                 onBudgetAction={options.onBudgetAction}
                 onEditNotes={options.onEditNotes}
@@ -660,7 +555,6 @@ export function Modals() {
               value={monthUtils.sheetForMonth(options.month)}
             >
               <ReportBudgetMonthMenuModal
-                modalProps={modalProps}
                 month={options.month}
                 onBudgetAction={options.onBudgetAction}
                 onEditNotes={options.onEditNotes}
@@ -669,7 +563,7 @@ export function Modals() {
           );
 
         case 'budget-list':
-          return <BudgetListModal key={name} modalProps={modalProps} />;
+          return <BudgetListModal key={name} />;
 
         default:
           console.error('Unknown modal:', name);

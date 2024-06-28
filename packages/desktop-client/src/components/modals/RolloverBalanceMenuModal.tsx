@@ -14,16 +14,12 @@ import {
 } from '../common/Modal2';
 import { Text } from '../common/Text';
 import { View } from '../common/View';
-import { type CommonModalProps } from '../Modals';
 
 type RolloverBalanceMenuModalProps = ComponentPropsWithoutRef<
   typeof BalanceMenu
-> & {
-  modalProps: CommonModalProps;
-};
+>;
 
 export function RolloverBalanceMenuModal({
-  modalProps,
   categoryId,
   onCarryover,
   onTransfer,
@@ -43,7 +39,7 @@ export function RolloverBalanceMenuModal({
   }
 
   return (
-    <Modal {...modalProps}>
+    <Modal name="rollover-balance-menu">
       {({ state: { close } }) => (
         <>
           <ModalHeader

@@ -14,16 +14,10 @@ import {
 } from '../common/Modal2';
 import { Text } from '../common/Text';
 import { View } from '../common/View';
-import { type CommonModalProps } from '../Modals';
 
-type ReportBalanceMenuModalProps = ComponentPropsWithoutRef<
-  typeof BalanceMenu
-> & {
-  modalProps: CommonModalProps;
-};
+type ReportBalanceMenuModalProps = ComponentPropsWithoutRef<typeof BalanceMenu>;
 
 export function ReportBalanceMenuModal({
-  modalProps,
   categoryId,
   onCarryover,
 }: ReportBalanceMenuModalProps) {
@@ -41,7 +35,7 @@ export function ReportBalanceMenuModal({
   }
 
   return (
-    <Modal {...modalProps}>
+    <Modal name="report-balance-menu">
       {({ state: { close } }) => (
         <>
           <ModalHeader

@@ -5,21 +5,21 @@ import { Block } from '../common/Block';
 import { Button } from '../common/Button';
 import { Modal, ModalCloseButton, ModalHeader } from '../common/Modal2';
 import { View } from '../common/View';
-import { type CommonModalProps } from '../Modals';
 
 type ConfirmTransactionEditProps = {
-  modalProps: Partial<CommonModalProps>;
   onConfirm: () => void;
   confirmReason: string;
 };
 
 export function ConfirmTransactionEdit({
-  modalProps,
   onConfirm,
   confirmReason,
 }: ConfirmTransactionEditProps) {
   return (
-    <Modal {...modalProps} contentProps={{ style: { flex: 0 } }}>
+    <Modal
+      name="confirm-transaction-edit"
+      containerProps={{ style: { width: '30vw' } }}
+    >
       {({ state: { close } }) => (
         <>
           <ModalHeader
