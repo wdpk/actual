@@ -70,6 +70,7 @@ export async function exportQueryToCSV(query) {
         { SortOrder: 'sort_order' },
         { Notes: 'notes' },
         { Category: 'category.name' },
+        { Group: 'group.name' },
         { Amount: 'amount' },
         { Cleared: 'cleared' },
         { Reconciled: 'reconciled' },
@@ -118,6 +119,7 @@ export async function exportQueryToCSV(query) {
             (trans.Notes || '')
           : trans.Notes,
       Category: trans.Category,
+      Group: trans.Group,
       Amount: trans.Amount == null ? 0 : integerToAmount(trans.Amount),
       Cleared:
         trans.Reconciled === true
