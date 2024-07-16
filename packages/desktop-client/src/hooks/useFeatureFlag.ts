@@ -6,11 +6,11 @@ import type { FeatureFlag } from 'loot-core/src/types/prefs';
 const DEFAULT_FEATURE_FLAG_STATE: Record<FeatureFlag, boolean> = {
   reportBudget: false,
   goalTemplatesEnabled: false,
-  customReports: false,
   spendingReport: false,
   simpleFinSync: false,
   splitsInRules: false,
   cashflowForecast: false,
+  iterableTopologicalSort: true,
 };
 
 export function useFeatureFlag(name: FeatureFlag): boolean {

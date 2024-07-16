@@ -5,6 +5,7 @@ import { amountToCurrency } from 'loot-core/src/shared/util';
 
 import { useCategories } from '../../../hooks/useCategories';
 import { styles } from '../../../style/styles';
+import { theme } from '../../../style/theme';
 import { Block } from '../../common/Block';
 import { View } from '../../common/View';
 import { PrivacyFilter } from '../../PrivacyFilter';
@@ -27,14 +28,18 @@ export function SpendingCard() {
   }, [categories]);
 
   const data = useReport('default', getGraphData);
+  const todayDay =
+    monthUtils.getDay(monthUtils.currentDay()) - 1 >= 28
+      ? 27
+      : monthUtils.getDay(monthUtils.currentDay()) - 1;
   const difference =
     data &&
-    data.intervalData[monthUtils.getDay(monthUtils.currentDay()) - 1].average -
-      data.intervalData[monthUtils.getDay(monthUtils.currentDay()) - 1]
-        .thisMonth;
+    data.intervalData[todayDay].lastMonth -
+      data.intervalData[todayDay].thisMonth;
+  const showLastMonth = data && Math.abs(data.intervalData[27].lastMonth) > 0;
 
   return (
-    <ReportCard flex="1" to="/reports/spending">
+    <ReportCard to="/reports/spending">
       <View
         style={{ flex: 1 }}
         onPointerEnter={() => setIsCardHovered(true)}
@@ -53,32 +58,44 @@ export function SpendingCard() {
               end={monthUtils.currentMonth()}
             />
           </View>
-          {data && (
+          {data && showLastMonth && (
             <View style={{ textAlign: 'right' }}>
               <Block
                 style={{
                   ...styles.mediumText,
                   fontWeight: 500,
                   marginBottom: 5,
+                  color: !difference
+                    ? 'inherit'
+                    : difference <= 0
+                      ? theme.noticeTextLight
+                      : theme.errorText,
                 }}
               >
                 <PrivacyFilter activationFilters={[!isCardHovered]}>
-                  {data && amountToCurrency(difference)}
+                  {data &&
+                    (difference && difference > 0 ? '+' : '') +
+                      amountToCurrency(difference)}
                 </PrivacyFilter>
               </Block>
             </View>
           )}
         </View>
-
-        {data ? (
+        {!showLastMonth ? (
+          <View style={{ padding: 5 }}>
+            <p style={{ margin: 0, textAlign: 'center' }}>
+              Additional data required to generate graph
+            </p>
+          </View>
+        ) : data ? (
           <SpendingGraph
             style={{ flex: 1 }}
             compact={true}
             data={data}
-            mode="average"
+            mode="lastMonth"
           />
         ) : (
-          <LoadingIndicator />
+          <LoadingIndicator message="Loading report..." />
         )}
       </View>
     </ReportCard>

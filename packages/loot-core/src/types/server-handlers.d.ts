@@ -32,7 +32,7 @@ export interface ServerHandlers {
       Parameters<typeof batchUpdateTransactions>[0],
       'detectOrphanPayees'
     >,
-  ) => Promise<Awaited<ReturnType<typeof batchUpdateTransactions>>['updated']>;
+  ) => Promise<Awaited<ReturnType<typeof batchUpdateTransactions>>>;
 
   'transaction-add': (transaction) => Promise<EmptyObject>;
 
@@ -152,11 +152,13 @@ export interface ServerHandlers {
     requisitionId;
     account;
     upgradingId;
+    offBudget;
   }) => Promise<'ok'>;
 
   'simplefin-accounts-link': (arg: {
     externalAccount;
     upgradingId;
+    offBudget;
   }) => Promise<'ok'>;
 
   'account-create': (arg: {
@@ -220,10 +222,15 @@ export interface ServerHandlers {
     updatedAccounts;
   }>;
 
-  'transactions-import': (arg: { accountId; transactions }) => Promise<{
+  'transactions-import': (arg: {
+    accountId;
+    transactions;
+    isPreview;
+  }) => Promise<{
     errors?: { message: string }[];
     added;
     updated;
+    updatedPreview;
   }>;
 
   'account-unlink': (arg: { id }) => Promise<'ok'>;

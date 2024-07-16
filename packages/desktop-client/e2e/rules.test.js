@@ -69,11 +69,6 @@ test.describe('Rules', () => {
   });
 
   test('creates a split transaction rule and makes sure it is applied when creating a transaction', async () => {
-    const settingsPage = await navigation.goToSettingsPage();
-    await settingsPage.enableExperimentalFeature('splits in rules');
-
-    await expect(settingsPage.page.getByLabel('splits in rules')).toBeChecked();
-
     rulesPage = await navigation.goToRulesPage();
 
     await rulesPage.createRule({
@@ -94,7 +89,7 @@ test.describe('Rules', () => {
         splitActions: [
           [
             {
-              field: 'a fixed percent',
+              field: 'a fixed percent of the remainder',
               value: '90',
             },
             {
@@ -125,7 +120,7 @@ test.describe('Rules', () => {
     });
 
     const transaction = accountPage.getNthTransaction(0);
-    await expect(transaction.payee).toHaveText('Ikea');
+    await expect(transaction.payee).toHaveText('Split');
     await expect(transaction.notes).toHaveText('food / entertainment');
     await expect(transaction.category).toHaveText('Split');
     await expect(transaction.debit).toHaveText('100.00');

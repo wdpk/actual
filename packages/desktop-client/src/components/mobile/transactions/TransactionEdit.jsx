@@ -28,6 +28,7 @@ import {
   splitTransaction,
   addSplitTransaction,
   deleteTransaction,
+  makeChild,
 } from 'loot-core/src/shared/transactions';
 import {
   titleFirst,
@@ -284,6 +285,7 @@ const ChildTransactionEdit = forwardRef(
   (
     {
       transaction,
+      amountFocused,
       amountSign,
       getCategory,
       getPrettyPayee,
@@ -336,11 +338,11 @@ const ChildTransactionEdit = forwardRef(
                 editingField &&
                 editingField !== getFieldName(transaction.id, 'amount')
               }
-              focused={transaction.amount === 0}
+              focused={amountFocused}
               value={amountToInteger(transaction.amount)}
               zeroSign={amountSign}
               style={{ marginRight: 8 }}
-              textStyle={{ ...styles.smallText, textAlign: 'right' }}
+              inputStyle={{ ...styles.smallText, textAlign: 'right' }}
               onFocus={() =>
                 onRequestActiveEdit(getFieldName(transaction.id, 'amount'))
               }
@@ -360,7 +362,7 @@ const ChildTransactionEdit = forwardRef(
         <View>
           <FieldLabel title="Category" />
           <TapField
-            style={{
+            textStyle={{
               ...((isOffBudget || isBudgetTransfer(transaction)) && {
                 fontStyle: 'italic',
                 color: theme.pageTextSubdued,
@@ -488,6 +490,9 @@ const TransactionEditInner = memo(function TransactionEditInner({
   };
 
   const getPrettyPayee = trans => {
+    if (trans && trans.is_parent) {
+      return 'Split';
+    }
     const transPayee = trans && getPayee(trans);
     const transTransferAcct = trans && getTransferAcct(trans);
     return getDescriptionPretty(trans, transPayee, transTransferAcct);
@@ -518,16 +523,20 @@ const TransactionEditInner = memo(function TransactionEditInner({
     const [unserializedTransaction] = unserializedTransactions;
 
     const onConfirmSave = async () => {
-      const { account: accountId } = unserializedTransaction;
-      const account = accountsById[accountId];
-
       let transactionsToSave = unserializedTransactions;
       if (adding) {
         transactionsToSave = realizeTempTransactions(unserializedTransactions);
       }
 
       props.onSave(transactionsToSave);
-      navigate(`/accounts/${account.id}`, { replace: true });
+
+      if (adding) {
+        const { account: accountId } = unserializedTransaction;
+        const account = accountsById[accountId];
+        navigate(`/accounts/${account.id}`, { replace: true });
+      } else {
+        navigate(-1);
+      }
     };
 
     if (unserializedTransaction.reconciled) {
@@ -634,12 +643,7 @@ const TransactionEditInner = memo(function TransactionEditInner({
               return;
             }
 
-            const { account: accountId } = unserializedTransaction;
-            if (accountId) {
-              navigate(`/accounts/${accountId}`, { replace: true });
-            } else {
-              navigate(-1);
-            }
+            navigate(-1);
           },
         }),
       );
@@ -761,11 +765,17 @@ const TransactionEditInner = memo(function TransactionEditInner({
         <View>
           <FieldLabel title="Payee" />
           <TapField
+            textStyle={{
+              ...(transaction.is_parent && {
+                fontStyle: 'italic',
+                fontWeight: 300,
+              }),
+            }}
+            value={getPrettyPayee(transaction)}
             disabled={
               editingField &&
               editingField !== getFieldName(transaction.id, 'payee')
             }
-            value={getPrettyPayee(transaction)}
             onClick={() => onEditField(transaction.id, 'payee')}
             data-testid="payee-field"
           />
@@ -795,10 +805,11 @@ const TransactionEditInner = memo(function TransactionEditInner({
           </View>
         )}
 
-        {childTransactions.map(childTrans => (
+        {childTransactions.map((childTrans, i, arr) => (
           <ChildTransactionEdit
             key={childTrans.id}
             transaction={childTrans}
+            amountFocused={arr.findIndex(c => c.amount === 0) === i}
             amountSign={childAmountSign}
             ref={r => {
               childTransactionElementRefMap.current = {
@@ -1136,7 +1147,11 @@ function TransactionEditUnconnected({
   };
 
   const onSplit = id => {
-    const changes = splitTransaction(transactions, id);
+    const changes = splitTransaction(transactions, id, parent => [
+      makeChild(parent),
+      makeChild(parent),
+    ]);
+
     setTransactions(changes.data);
   };
 
